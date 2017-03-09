@@ -1,7 +1,7 @@
 from mysql.connector import MySQLConnection
 from python_mysql_dbconfig import read_db_config
 
-from Controller import *
+from Connection import *
 from bs4 import BeautifulSoup
 import urllib3
 
@@ -13,6 +13,7 @@ class HtmlParse:
     page_id = -1  #id of current page in mysql database
     def __init__(self, page_url):
         (conn, dbc) = self.get_connection()
+        #if already has this url - delete
         dbc.execute("INSERT INTO `pages`(`url`, `date`) VALUES ('"+page_url+"',"
                     "'"+datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+"')")
         conn.commit()
@@ -95,7 +96,10 @@ class HtmlParse:
         (conn, dbc) = self.get_connection()
 
         keywords = soup.find('meta', attrs={'name':'keywords'})
-        words_arr = keywords['content'].split(', ')
+
+        words_arr = []
+        if (keywords != None):
+            words_arr = keywords['content'].split(', ')
 
         for kw in words_arr:
             keyword_str = self.get_escape(str(kw))

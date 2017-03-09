@@ -1,15 +1,6 @@
 from HtmlParse import *
-from mysql.connector import MySQLConnection, Error
+from Connection import *
 import hashlib
-
-class Connection:
-
-    @classmethod
-    def connection(cls):
-        dbconfig = read_db_config()
-        conn = MySQLConnection(**dbconfig)
-        return (conn, conn.cursor())
-
 
 class BaseQueries:
 
@@ -71,9 +62,16 @@ class Analysis:
     is_running = True
 
     @classmethod
-    def run(self):
-        raise NotImplemented
+    def run(self, http_address):
+        analyse = HtmlParse(http_address)
+        if (self.is_running):
+            analyse.get_keywords()
+        if (self.is_running):
+            analyse.get_tag_hs()
+        if (self.is_running):
+            analyse.get_tag_p()
+        self.is_running = True
 
     @classmethod
     def stop(self, page_id):
-        raise NotImplemented
+        self.is_running = False
