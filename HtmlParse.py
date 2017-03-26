@@ -14,11 +14,16 @@ class HtmlParse:
     def __init__(self, page_url):
         (conn, dbc) = self.get_connection()
         #if already has this url - delete
+        dbc.execute("SELECT COUNT(*) FROM `pages` WHERE url = '%s'" % page_url)
+        result = dbc.fetchone()[0] #cnt of pages (page_url)
+        if (result): # if already analysed - delete
+            dbc.execute("DELETE FROM `pages` WHERE url = '%s'" % page_url)
+
         dbc.execute("INSERT INTO `pages`(`url`, `date`) VALUES ('"+page_url+"',"
                     "'"+datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")+"')")
         conn.commit()
         conn.close()
-        self.page_id = dbc.lastrowid
+        self.page_id = dbc.lastrowid # inserted index
         self.url = page_url
 
     def get_connection(self):  #get mysql connection

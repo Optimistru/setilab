@@ -5,7 +5,7 @@ import hashlib
 class BaseQueries:
 
     @classmethod
-    def auth_check(self, login, password):
+    def auth_check(self, login, password): #authorization check
         (conn, dbc) = Connection.connection()
         passw = hashlib.md5(password).hexdigest()
         dbc.execute("SELECT id FROM `users` WHERE login = '" + login + "'"
@@ -27,7 +27,7 @@ class BaseQueries:
         return data
 
     @classmethod
-    def get_by_num(self, page_id):
+    def get_by_num(self, page_id): #get all info by number in sites list
         (conn, dbc) = Connection.connection()
         dbc.execute("SELECT * FROM `keywords` WHERE pages_id = '%d'" % page_id)
         keywords = list(dbc.fetchall())
@@ -42,7 +42,7 @@ class BaseQueries:
         return (keywords, tag_p, tag_hs)
 
     @classmethod
-    def del_by_num(self, page_id):
+    def del_by_num(self, page_id): #delete all info by number in sites list (another tables DELETE CASCADE)
         (conn, dbc) = Connection.connection()
         try:
             dbc.execute("DELETE FROM `pages` WHERE id = '%d'" % page_id)
@@ -63,15 +63,22 @@ class Analysis:
 
     @classmethod
     def run(self, http_address):
+        self.is_running = True
         analyse = HtmlParse(http_address)
         if (self.is_running):
             analyse.get_keywords()
+        else:
+            return 0
         if (self.is_running):
             analyse.get_tag_hs()
+        else:
+            return 0
         if (self.is_running):
             analyse.get_tag_p()
-        self.is_running = True
+        else:
+            return 0
+        return 1
 
     @classmethod
-    def stop(self, page_id):
+    def stop(self):
         self.is_running = False
