@@ -152,7 +152,7 @@ class Server(threading.Thread):
                     if (data == 'stop'):
                         stopped = True
                         Analysis.stop()
-                        self.socket.send("Analyze canceled\r\n".encode("utf-8"))
+                        self.socket.send("Analyse canceled\r\n".encode("utf-8"))
                         break
 
                 if not (stopped): #if not stopped - finished

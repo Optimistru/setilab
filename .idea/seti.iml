@@ -9,6 +9,11 @@
     <orderEntry type="module" module-name="homework1" />
     <orderEntry type="module" module-name="homework2" />
     <orderEntry type="module" module-name="test" />
+    <orderEntry type="module" module-name="seti_client" />
+    <orderEntry type="module" module-name="course4" />
+    <orderEntry type="module" module-name="perseptron_mnist" />
+    <orderEntry type="module" module-name="perseptron_mnist" />
+    <orderEntry type="module" module-name="homework3" />
   </component>
   <component name="TestRunnerService">
     <option name="PROJECT_TEST_RUNNER" value="Unittests" />
