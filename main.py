@@ -5,18 +5,6 @@ import socket, threading
 from HtmlParse import *
 from Server import *
 
-# http = urllib3.PoolManager()
-# page = http.request('get', 'http://www.radunia.ru/oplata').data
-# markup = '<a href="http://example.com/">I linked to <i>example.com</i></a>'
-# soup = BeautifulSoup(page, 'html.parser')
-#
-# soup.prettify()
-#
-#
-# htmlp = HtmlParse("rassudariki.ru")
-# htmlp.get_keywords()
-
-
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 s.bind(('', 1911))

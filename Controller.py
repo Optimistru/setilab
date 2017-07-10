@@ -7,7 +7,7 @@ class BaseQueries:
     @classmethod
     def auth_check(self, login, password): #authorization check
         (conn, dbc) = Connection.connection()
-        passw = hashlib.md5(password).hexdigest()
+        passw = hashlib.md5(password.encode("utf-8")).hexdigest()
         dbc.execute("SELECT id FROM `users` WHERE login = '" + login + "'"
                     " AND password = '" + passw + "'")
         data = dbc.fetchone()

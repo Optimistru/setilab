@@ -3,6 +3,7 @@ from Controller import *
 from time import sleep
 from multiprocessing.pool import ThreadPool
 import re
+import time
 
 def foo(bar, baz):
     print('hello {0}'.format(bar))
@@ -23,7 +24,7 @@ class Server(threading.Thread):
     # analysis work
     # exit work
     welcome_message = 'Welcome to RSA - Robot of Sites Analysis\r\n' \
-                      '-start: Login\r\n' \
+                      '-login: Login\r\n' \
                       '-help: Commands\r\n' \
                       '-list: List of analysed addresses\r\n' \
                       '-info #: Get info about site from list\r\n' \
@@ -38,34 +39,50 @@ class Server(threading.Thread):
         self.address = address
         print("Connected by", address)
 
+        t = threading.Thread(target=self.threadListen)
+        t.start()
+        self.lastData = None
 
+
+    def threadListen(self):
+        while True:
+            time.sleep(.05)
+            data = self.socket.recv(1024).decode()  # wait for keypress + enter
+            enter = self.socket.recv(1024).decode()
+            if (data):
+                self.lastData = data
+                print(data)
+
+    def getData(self):
+        while (self.lastData == None):
+            continue
+        return self.lastData
 
     def run(self):
         global async_result
-        self.socket.recv(1024)
+        # self.socket.recv(1024)
         # start_conv = bytes([255, 253, 34])
         # self.socket.send("/xff/xfd/x22".encode("utf-8"))
         self.socket.send(self.welcome_message.encode("utf-8"))
 
         while (True):
             # display welcome message
-            data = self.socket.recv(1024).decode()  # wait for keypress + enter
-            enter = self.socket.recv(1024).decode()
-            print(data)
 
-            if data == '\r\n':
+            data = self.lastData
+            if (not data) or data == '\r\n':
                 continue
+            self.lastData = None
             # WITHOUT SIGN IN: BEGIN
-            if data == 'start':
+            if data == 'login':
                 data = 'Print login:\r\n'
                 self.socket.send(data.encode("utf-8"))
-                login = self.socket.recv(1024).decode()
-                enter = self.socket.recv(1024).decode()
+                login = self.getData()
+                self.lastData = None
 
                 data = 'Print password:\r\n'
                 self.socket.send(data.encode("utf-8"))
-                password = self.socket.recv(1024).decode().encode('utf-8')
-                enter = self.socket.recv(1024).decode()
+                password = self.getData()
+                self.lastData = None
 
                 self.client_id = BaseQueries.auth_check(login, password)
                 if (self.client_id == -1):
@@ -81,11 +98,6 @@ class Server(threading.Thread):
 
             elif data == 'exit':
                 break
-            # WITHOUT SIGN IN: END
-            #             elif (self.client_id == -1):  #if not sign in - continue
-            #                 data = 'Please sign in to continue\r\n'
-            #                 self.socket.send(data.encode("utf-8"))
-            #                 continue
 
             elif data == 'list':
                 url_list = BaseQueries.get_list()
@@ -93,6 +105,12 @@ class Server(threading.Thread):
                 for url in url_list:
                     url_str += "%d: %s\r\n" % (url[0], url[1])  # get list of analised pages
                 self.socket.send(url_str.encode("utf-8"))
+
+            # WITHOUT SIGN IN: END
+            elif (self.client_id == -1):  # if not sign in - continue
+                data = 'Please sign in to continue\r\n'
+                self.socket.send(data.encode("utf-8"))
+                continue
 
             elif (str(data).split(' ')[0] == 'info' and len(str(data).split(' ')) > 1  # info
                   and str(data).split(' ')[1].isdigit()):
@@ -147,8 +165,7 @@ class Server(threading.Thread):
                 self.socket.send("-stop: Stop analysis\r\n".encode("utf-8"))
                 stopped = False
                 while not (async_result.ready()): #can stop function
-                    data = self.socket.recv(1024).decode()
-                    enter = self.socket.recv(1024).decode()
+                    data = self.lastData
                     if (data == 'stop'):
                         stopped = True
                         Analysis.stop()
@@ -156,7 +173,9 @@ class Server(threading.Thread):
                         break
 
                 if not (stopped): #if not stopped - finished
+                    print("done")
                     self.socket.send("Analyze finished\r\n".encode("utf-8"))
+
                 pool.close()
 
             else:
@@ -164,5 +183,6 @@ class Server(threading.Thread):
                 self.socket.send(data.encode("utf-8"))
 
         self.socket.send("Exiting...".encode("utf-8"))
+        time.sleep(1)
         # close connection
         self.socket.close()
